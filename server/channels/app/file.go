@@ -1590,31 +1590,10 @@ func (a *App) ExtractContentFromFileInfo(rctx request.CTX, fileInfo *model.FileI
 	return nil
 }
 
-// GetLastAccessibleFileTime returns CreateAt time(from cache) of the last accessible post as per the cloud limit
+// GetLastAccessibleFileTime returns CreateAt time(from cache) of the last accessible post as per the cloud limit.
+// File accessibility limits are disabled: always returns 0 (all files accessible).
 func (a *App) GetLastAccessibleFileTime() (int64, *model.AppError) {
-	license := a.Srv().License()
-	if !license.IsCloud() {
-		return 0, nil
-	}
-
-	system, err := a.Srv().Store().System().GetByName(model.SystemLastAccessibleFileTime)
-	if err != nil {
-		var nfErr *store.ErrNotFound
-		switch {
-		case errors.As(err, &nfErr):
-			// All files are accessible
-			return 0, nil
-		default:
-			return 0, model.NewAppError("GetLastAccessibleFileTime", "app.system.get_by_name.app_error", nil, "", http.StatusInternalServerError).Wrap(err)
-		}
-	}
-
-	lastAccessibleFileTime, err := strconv.ParseInt(system.Value, 10, 64)
-	if err != nil {
-		return 0, model.NewAppError("GetLastAccessibleFileTime", "common.parse_error_int64", map[string]any{"Value": system.Value}, "", http.StatusInternalServerError).Wrap(err)
-	}
-
-	return lastAccessibleFileTime, nil
+	return 0, nil
 }
 
 // ComputeLastAccessibleFileTime updates cache with CreateAt time of the last accessible file as per the cloud plan's limit.

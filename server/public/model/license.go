@@ -34,10 +34,10 @@ const (
 )
 
 var LicenseToLicenseTier = map[string]int{
-	LicenseShortSkuProfessional:       ProfessionalTier,
-	LicenseShortSkuEnterprise:         EnterpriseTier,
+	LicenseShortSkuProfessional:       EnterpriseAdvancedTier,
+	LicenseShortSkuEnterprise:         EnterpriseAdvancedTier,
 	LicenseShortSkuEnterpriseAdvanced: EnterpriseAdvancedTier,
-	LicenseShortSkuMattermostEntry:    EntryTier,
+	LicenseShortSkuMattermostEntry:    EnterpriseAdvancedTier,
 }
 
 const (
@@ -224,129 +224,38 @@ func (f *Features) ToMap() map[string]any {
 }
 
 func (f *Features) SetDefaults() {
-	if f.FutureFeatures == nil {
-		f.FutureFeatures = NewPointer(true)
-	}
-
-	if f.Users == nil {
-		f.Users = NewPointer(0)
-	}
-
-	if f.LDAP == nil {
-		f.LDAP = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.LDAPGroups == nil {
-		f.LDAPGroups = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.MFA == nil {
-		f.MFA = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.GoogleOAuth == nil {
-		f.GoogleOAuth = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.Office365OAuth == nil {
-		f.Office365OAuth = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.OpenId == nil {
-		f.OpenId = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.Compliance == nil {
-		f.Compliance = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.Cluster == nil {
-		f.Cluster = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.Metrics == nil {
-		f.Metrics = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.MHPNS == nil {
-		f.MHPNS = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.SAML == nil {
-		f.SAML = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.Elasticsearch == nil {
-		f.Elasticsearch = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.Announcement == nil {
-		f.Announcement = NewPointer(true)
-	}
-
-	if f.ThemeManagement == nil {
-		f.ThemeManagement = NewPointer(true)
-	}
-
-	if f.EmailNotificationContents == nil {
-		f.EmailNotificationContents = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.DataRetention == nil {
-		f.DataRetention = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.MessageExport == nil {
-		f.MessageExport = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.CustomPermissionsSchemes == nil {
-		f.CustomPermissionsSchemes = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.GuestAccounts == nil {
-		f.GuestAccounts = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.GuestAccountsPermissions == nil {
-		f.GuestAccountsPermissions = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.CustomTermsOfService == nil {
-		f.CustomTermsOfService = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.IDLoadedPushNotifications == nil {
-		f.IDLoadedPushNotifications = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.LockTeammateNameDisplay == nil {
-		f.LockTeammateNameDisplay = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.EnterprisePlugins == nil {
-		f.EnterprisePlugins = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.AdvancedLogging == nil {
-		f.AdvancedLogging = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.Cloud == nil {
-		f.Cloud = NewPointer(false)
-	}
-
-	if f.SharedChannels == nil {
-		f.SharedChannels = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.RemoteClusterService == nil {
-		f.RemoteClusterService = NewPointer(*f.FutureFeatures)
-	}
-
-	if f.OutgoingOAuthConnections == nil {
-		f.OutgoingOAuthConnections = NewPointer(*f.FutureFeatures)
-	}
+	f.FutureFeatures = NewPointer(true)
+	f.Users = NewPointer(0)
+	f.LDAP = NewPointer(true)
+	f.LDAPGroups = NewPointer(true)
+	f.MFA = NewPointer(true)
+	f.GoogleOAuth = NewPointer(true)
+	f.Office365OAuth = NewPointer(true)
+	f.OpenId = NewPointer(true)
+	f.Compliance = NewPointer(true)
+	f.Cluster = NewPointer(true)
+	f.Metrics = NewPointer(true)
+	f.MHPNS = NewPointer(true)
+	f.SAML = NewPointer(true)
+	f.Elasticsearch = NewPointer(true)
+	f.Announcement = NewPointer(true)
+	f.ThemeManagement = NewPointer(true)
+	f.EmailNotificationContents = NewPointer(true)
+	f.DataRetention = NewPointer(true)
+	f.MessageExport = NewPointer(true)
+	f.CustomPermissionsSchemes = NewPointer(true)
+	f.GuestAccounts = NewPointer(true)
+	f.GuestAccountsPermissions = NewPointer(true)
+	f.CustomTermsOfService = NewPointer(true)
+	f.IDLoadedPushNotifications = NewPointer(true)
+	f.LockTeammateNameDisplay = NewPointer(true)
+	f.EnterprisePlugins = NewPointer(true)
+	f.AdvancedLogging = NewPointer(true)
+	f.Cloud = NewPointer(false)
+	f.SharedChannels = NewPointer(true)
+	f.RemoteClusterService = NewPointer(true)
+	f.OutgoingOAuthConnections = NewPointer(true)
+	f.AutoTranslation = NewPointer(true)
 }
 
 func (l *License) IsExpired() bool {
@@ -395,32 +304,15 @@ func (l *License) IsSanctionedTrial() bool {
 }
 
 func (l *License) HasEnterpriseMarketplacePlugins() bool {
-	return *l.Features.EnterprisePlugins ||
-		l.SkuShortName == LicenseShortSkuE20 ||
-		MinimumProfessionalLicense(l)
+	return true
 }
 
 func (l *License) HasRemoteClusterService() bool {
-	if l == nil {
-		return false
-	}
-
-	// If SharedChannels is enabled then RemoteClusterService must be enabled.
-	if l.HasSharedChannels() {
-		return true
-	}
-
-	return (l.Features != nil && l.Features.RemoteClusterService != nil && *l.Features.RemoteClusterService) ||
-		MinimumProfessionalLicense(l)
+	return true
 }
 
 func (l *License) HasSharedChannels() bool {
-	if l == nil {
-		return false
-	}
-
-	return (l.Features != nil && l.Features.SharedChannels != nil && *l.Features.SharedChannels) ||
-		MinimumProfessionalLicense(l)
+	return true
 }
 
 // NewTestLicense returns a license that expires in the future and has the given features.
@@ -495,16 +387,16 @@ func (lr *LicenseRecord) PreSave() {
 // MinimumProfessionalLicense returns true if the provided license is at least a professional license.
 // Higher tier licenses also satisfy the condition.
 func MinimumProfessionalLicense(license *License) bool {
-	return license != nil && LicenseToLicenseTier[license.SkuShortName] >= ProfessionalTier
+	return true
 }
 
 // MinimumEnterpriseLicense returns true if the provided license is at least a enterprise license.
 // Higher tier licenses also satisfy the condition.
 func MinimumEnterpriseLicense(license *License) bool {
-	return license != nil && LicenseToLicenseTier[license.SkuShortName] >= EnterpriseTier
+	return true
 }
 
 // MinimumEnterpriseAdvancedLicense returns true if the provided license is at least an Enterprise Advanced license.
 func MinimumEnterpriseAdvancedLicense(license *License) bool {
-	return license != nil && LicenseToLicenseTier[license.SkuShortName] >= EnterpriseAdvancedTier
+	return true
 }

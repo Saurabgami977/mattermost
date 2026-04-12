@@ -4,11 +4,9 @@
 package last_accessible_file
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/mattermost/mattermost/server/public/model"
-	"github.com/mattermost/mattermost/server/public/shared/mlog"
 	"github.com/mattermost/mattermost/server/v8/channels/jobs"
 )
 
@@ -16,9 +14,7 @@ const schedFreq = 2 * time.Hour
 
 func MakeScheduler(jobServer *jobs.JobServer, license *model.License) *jobs.PeriodicScheduler {
 	isEnabled := func(cfg *model.Config) bool {
-		enabled := license != nil && *license.Features.Cloud
-		mlog.Debug("Scheduler: isEnabled: "+strconv.FormatBool(enabled), mlog.String("scheduler", model.JobTypeLastAccessibleFile))
-		return enabled
+		return false
 	}
 	return jobs.NewPeriodicScheduler(jobServer, model.JobTypeLastAccessibleFile, schedFreq, isEnabled)
 }

@@ -11,97 +11,16 @@ import (
 
 // removeInaccessibleContentFromFilesSlice removes content from the files beyond the cloud plan's limit
 // and also returns the firstInaccessibleFileTime
+// removeInaccessibleContentFromFilesSlice removes content from the files beyond the cloud plan's limit
+// and also returns the firstInaccessibleFileTime
 func (a *App) removeInaccessibleContentFromFilesSlice(files []*model.FileInfo) (int64, *model.AppError) {
-	if len(files) == 0 {
-		return 0, nil
-	}
-
-	lastAccessibleFileTime, appErr := a.GetLastAccessibleFileTime()
-	if appErr != nil {
-		return 0, model.NewAppError("removeInaccessibleFileListContent", "app.last_accessible_file.app_error", nil, "", http.StatusInternalServerError).Wrap(appErr)
-	}
-	if lastAccessibleFileTime == 0 {
-		// No need to remove content, all files are accessible
-		return 0, nil
-	}
-
-	var firstInaccessibleFileTime int64
-	for _, file := range files {
-		if createAt := file.CreateAt; createAt < lastAccessibleFileTime {
-			file.MakeContentInaccessible()
-			if createAt > firstInaccessibleFileTime {
-				firstInaccessibleFileTime = createAt
-			}
-		}
-	}
-
-	return firstInaccessibleFileTime, nil
+	// File accessibility limits are disabled: all files are always accessible.
+	return 0, nil
 }
 
 // filterInaccessibleFiles filters out the files, past the cloud limit
 func (a *App) filterInaccessibleFiles(fileList *model.FileInfoList, options filterFileOptions) *model.AppError {
-	if fileList == nil || fileList.FileInfos == nil || len(fileList.FileInfos) == 0 {
-		return nil
-	}
-
-	lastAccessibleFileTime, appErr := a.GetLastAccessibleFileTime()
-	if appErr != nil {
-		return model.NewAppError("filterInaccessibleFiles", "app.last_accessible_file.app_error", nil, "", http.StatusInternalServerError).Wrap(appErr)
-	}
-	if lastAccessibleFileTime == 0 {
-		// No need to filter, all files are accessible
-		return nil
-	}
-
-	if len(fileList.FileInfos) == len(fileList.Order) && options.assumeSortedCreatedAt {
-		lenFiles := len(fileList.FileInfos)
-		getCreateAt := func(i int) int64 { return fileList.FileInfos[fileList.Order[i]].CreateAt }
-
-		bounds := getTimeSortedPostAccessibleBounds(lastAccessibleFileTime, lenFiles, getCreateAt)
-
-		if bounds.allAccessible(lenFiles) {
-			return nil
-		}
-		if bounds.noAccessible() {
-			if lenFiles > 0 {
-				firstFileCreatedAt := fileList.FileInfos[fileList.Order[0]].CreateAt
-				lastFileCreatedAt := fileList.FileInfos[fileList.Order[lenFiles-1]].CreateAt
-				fileList.FirstInaccessibleFileTime = max(firstFileCreatedAt, lastFileCreatedAt)
-			}
-			fileList.FileInfos = map[string]*model.FileInfo{}
-			fileList.Order = []string{}
-			return nil
-		}
-		startInaccessibleIndex, endInaccessibleIndex := bounds.getInaccessibleRange(len(fileList.Order))
-		startInaccessibleCreatedAt := fileList.FileInfos[fileList.Order[startInaccessibleIndex]].CreateAt
-		endInaccessibleCreatedAt := fileList.FileInfos[fileList.Order[endInaccessibleIndex]].CreateAt
-		fileList.FirstInaccessibleFileTime = max(startInaccessibleCreatedAt, endInaccessibleCreatedAt)
-
-		files := fileList.FileInfos
-		order := fileList.Order
-		accessibleCount := bounds.end - bounds.start + 1
-		inaccessibleCount := lenFiles - accessibleCount
-		// Linearly cover shorter route to traverse files map
-		if inaccessibleCount < accessibleCount {
-			for i := 0; i < bounds.start; i++ {
-				delete(files, order[i])
-			}
-			for i := bounds.end + 1; i < lenFiles; i++ {
-				delete(files, order[i])
-			}
-		} else {
-			accessibleFiles := make(map[string]*model.FileInfo, accessibleCount)
-			for i := bounds.start; i <= bounds.end; i++ {
-				accessibleFiles[order[i]] = files[order[i]]
-			}
-			fileList.FileInfos = accessibleFiles
-		}
-
-		fileList.Order = fileList.Order[bounds.start : bounds.end+1]
-	} else {
-		linearFilterFileList(fileList, lastAccessibleFileTime)
-	}
-
+	// File accessibility limits are disabled: all files are always accessible.
 	return nil
 }
 

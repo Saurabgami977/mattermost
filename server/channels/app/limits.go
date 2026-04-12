@@ -16,36 +16,13 @@ const (
 
 func (a *App) GetServerLimits() (*model.ServerLimits, *model.AppError) {
 	limits := &model.ServerLimits{}
-	license := a.License()
 
-	if license == nil && maxUsersLimit > 0 {
-		// Enforce hard-coded limits for unlicensed servers (no grace period).
-		limits.MaxUsersLimit = maxUsersLimit
-		limits.MaxUsersHardLimit = maxUsersHardLimit
-	} else if license != nil && license.IsSeatCountEnforced && license.Features != nil && license.Features.Users != nil {
-		// Enforce license limits as required by the license with configurable extra users.
-		licenseUserLimit := int64(*license.Features.Users)
-		limits.MaxUsersLimit = licenseUserLimit
+	// User limits are disabled for self-hosted: always 0 (unlimited).
+	limits.MaxUsersLimit = 0
+	limits.MaxUsersHardLimit = 0
 
-		// Use ExtraUsers if configured, otherwise default to 0 (no extra users)
-		extraUsers := 0
-		if license.ExtraUsers != nil {
-			extraUsers = *license.ExtraUsers
-		}
-
-		limits.MaxUsersHardLimit = licenseUserLimit + int64(extraUsers)
-	}
-
-	// Check if license has post history limits and get the calculated timestamp
-	if license != nil && license.Limits != nil && license.Limits.PostHistory > 0 {
-		limits.PostHistoryLimit = license.Limits.PostHistory
-		// Get the calculated timestamp of the last accessible post
-		lastAccessibleTime, appErr := a.GetLastAccessiblePostTime()
-		if appErr != nil {
-			return nil, appErr
-		}
-		limits.LastAccessiblePostTime = lastAccessibleTime
-	}
+	// Post history limits are disabled for self-hosted: all posts are always accessible.
+	// limits.PostHistoryLimit and limits.LastAccessiblePostTime remain at 0 (no limit).
 
 	activeUserCount, appErr := a.Srv().Store().User().Count(model.UserCountOptions{})
 	if appErr != nil {
@@ -61,10 +38,8 @@ func (a *App) GetServerLimits() (*model.ServerLimits, *model.AppError) {
 		// Single-channel guests are free and excluded from the primary seat count.
 		limits.ActiveUserCount = max(activeUserCount-singleChannelGuestCount, 0)
 		limits.SingleChannelGuestCount = singleChannelGuestCount
-		// Guests are allowed up to a 1:1 ratio with licensed seats.
-		if license != nil && license.Features != nil && license.Features.Users != nil {
-			limits.SingleChannelGuestLimit = int64(*license.Features.Users)
-		}
+		// Guests are unlimited.
+		limits.SingleChannelGuestLimit = 0
 	} else {
 		limits.ActiveUserCount = activeUserCount
 	}
@@ -89,13 +64,8 @@ func (a *App) shouldTrackSingleChannelGuests() bool {
 }
 
 func (a *App) GetPostHistoryLimit() int64 {
-	license := a.License()
-	if license == nil || license.Limits == nil || license.Limits.PostHistory == 0 {
-		// No limits applicable
-		return 0
-	}
-
-	return license.Limits.PostHistory
+	// Post history limits are disabled for self-hosted: always return 0 (unlimited).
+	return 0
 }
 
 func (a *App) isAtUserLimit() (bool, *model.AppError) {

@@ -95,6 +95,7 @@ services:
 
   start_dependencies:
     image: mattermost/mattermost-wait-for-dep:latest
+    platform: linux/amd64
     networks:
       - mm-test
     depends_on:
@@ -111,6 +112,7 @@ services:
     command: postgres:5432 minio:9000 inbucket:9001 openldap:389 elasticsearch:9200 opensearch:9201 prometheus:9090 grafana:3000 loki:3100 otel-collector:13133
 
   leader:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: ./build/Dockerfile.buildenv
@@ -123,6 +125,8 @@ services:
       - "MM_CLUSTERSETTINGS_ENABLE=true"
       - "MM_CLUSTERSETTINGS_CLUSTERNAME=mm_dev_cluster"
       - "MM_LOGSETTINGS_FILELOCATION=./logs/leader"
+      - "SKIP_SETUP_GO_WORK=true"
+      - "BUILD_ENTERPRISE=false"
     networks:
       - mm-test
     depends_on:
@@ -148,6 +152,7 @@ services:
       - "8075"
 
   follower:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: ./build/Dockerfile.buildenv
@@ -160,6 +165,8 @@ services:
       - "MM_CLUSTERSETTINGS_ENABLE=true"
       - "MM_CLUSTERSETTINGS_CLUSTERNAME=mm_dev_cluster"
       - "MM_LOGSETTINGS_FILELOCATION=./logs/follower"
+      - "SKIP_SETUP_GO_WORK=true"
+      - "BUILD_ENTERPRISE=false"
     networks:
       - mm-test
     depends_on:
@@ -185,6 +192,7 @@ services:
       - "8075"
 
   follower2:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: ./build/Dockerfile.buildenv
@@ -197,6 +205,8 @@ services:
       - "MM_CLUSTERSETTINGS_ENABLE=true"
       - "MM_CLUSTERSETTINGS_CLUSTERNAME=mm_dev_cluster"
       - "MM_LOGSETTINGS_FILELOCATION=./logs/follower2"
+      - "SKIP_SETUP_GO_WORK=true"
+      - "BUILD_ENTERPRISE=false"
     networks:
       - mm-test
     depends_on:
@@ -244,5 +254,5 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 192.168.254.0/24
-          ip_range: 192.168.254.0/24
+        - subnet: 192.168.251.0/24
+          ip_range: 192.168.251.0/24

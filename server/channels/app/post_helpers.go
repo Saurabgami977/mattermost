@@ -141,71 +141,12 @@ func linearFilterPostsSlice(posts []*model.Post, earliestAccessibleTime int64) (
 }
 
 // filterInaccessiblePosts filters out the posts, past the cloud limit
+// filterInaccessiblePosts filters out the posts, past the cloud limit
 func (a *App) filterInaccessiblePosts(postList *model.PostList, options filterPostOptions) *model.AppError {
-	if postList == nil || postList.Posts == nil || len(postList.Posts) == 0 {
-		return nil
-	}
-
-	lastAccessiblePostTime, appErr := a.GetLastAccessiblePostTime()
-	if appErr != nil {
-		return model.NewAppError("filterInaccessiblePosts", "app.last_accessible_post.app_error", nil, "", http.StatusInternalServerError).Wrap(appErr)
-	}
-	if lastAccessiblePostTime == 0 {
-		// No need to filter, all posts are accessible
-		return nil
-	}
-
-	if len(postList.Posts) == len(postList.Order) && options.assumeSortedCreatedAt {
-		lenPosts := len(postList.Posts)
-		getCreateAt := func(i int) int64 { return postList.Posts[postList.Order[i]].CreateAt }
-
-		bounds := getTimeSortedPostAccessibleBounds(lastAccessiblePostTime, lenPosts, getCreateAt)
-
-		if bounds.allAccessible(lenPosts) {
-			return nil
-		}
-		if bounds.noAccessible() {
-			if lenPosts > 0 {
-				firstPostCreatedAt := postList.Posts[postList.Order[0]].CreateAt
-				lastPostCreatedAt := postList.Posts[postList.Order[len(postList.Order)-1]].CreateAt
-				postList.FirstInaccessiblePostTime = max(firstPostCreatedAt, lastPostCreatedAt)
-			}
-			postList.Posts = map[string]*model.Post{}
-			postList.Order = []string{}
-			return nil
-		}
-		startInaccessibleIndex, endInaccessibleIndex := bounds.getInaccessibleRange(len(postList.Order))
-		startInaccessibleCreatedAt := postList.Posts[postList.Order[startInaccessibleIndex]].CreateAt
-		endInaccessibleCreatedAt := postList.Posts[postList.Order[endInaccessibleIndex]].CreateAt
-		postList.FirstInaccessiblePostTime = max(startInaccessibleCreatedAt, endInaccessibleCreatedAt)
-
-		posts := postList.Posts
-		order := postList.Order
-		accessibleCount := bounds.end - bounds.start + 1
-		inaccessibleCount := lenPosts - accessibleCount
-		// Linearly cover shorter route to traverse posts map
-		if inaccessibleCount < accessibleCount {
-			for i := 0; i < bounds.start; i++ {
-				delete(posts, order[i])
-			}
-			for i := bounds.end + 1; i < lenPosts; i++ {
-				delete(posts, order[i])
-			}
-		} else {
-			accessiblePosts := make(map[string]*model.Post, accessibleCount)
-			for i := bounds.start; i <= bounds.end; i++ {
-				accessiblePosts[order[i]] = posts[order[i]]
-			}
-			postList.Posts = accessiblePosts
-		}
-
-		postList.Order = postList.Order[bounds.start : bounds.end+1]
-	} else {
-		linearFilterPostList(postList, lastAccessiblePostTime)
-	}
-
+	// Post history limits are disabled for self-hosted: all posts are always accessible.
 	return nil
 }
+
 
 // isInaccessiblePost indicates if the post is past the cloud plan's limit.
 func (a *App) isInaccessiblePost(post *model.Post) (int64, *model.AppError) {
